@@ -1,0 +1,124 @@
+Turbo Assembler	 Version 4.1	    03/02/26 20:15:45	    Page 1
+itoa.asm
+
+
+
+      1				     ;==========================Settings======================================
+      2				     .286
+      3	0000			     .model tiny
+      4	0000			     .code
+      5				     LOCALS @@
+      6				     org 100h
+      7				     ;========================================================================
+      8
+      9				     ;===================================Data=================================
+     10	0100			     DATASEG
+     11	0000  07D0*(00)		     Buff db 80*25 dup (0)
+     12				     ;========================================================================
+     13
+     14				     ;===================================Code=================================
+     15	07D0			     CODESEG
+     16	0100			     Start:
+     17				     ;===================================Main=================================
+     18	0100			     Main	     proc
+     19	0100  BA 010A				     mov dx, 266d
+     20	0103  BF 0000r				     mov di, offset Buff
+     21	0106  E8 001A				     call Itoa
+     22
+     23	0109  68 B800				     push 0b800h
+     24	010C  07				     pop es
+     25	010D  33 F6				     xor si, si
+     26	010F  BF 0370				     mov di, (80d *5 + 40d) * 2
+     27	0112  BE 0000r				     mov si, offset Buff
+     28	0115  B9 0004				     mov cx, 4
+     29
+     30	0118  AC		     @@lp:	     lodsb
+     31	0119  B4 4C				     mov ah, 4ch
+     32	011B  AB				     stosw
+     33	011C  E2 FA				     loop @@lp
+     34
+     35	011E  B8 4C00				     mov ax, 4c00h
+     36	0121  CD 21						     int 21h
+     37	0123					     endp
+     38				     ;========================================================================
+     39
+     40				     ;===================================Itoa=================================
+     41	0123			     Itoa	     proc
+     42	0123  B9 0004				     mov cx, 4d	;4-digits
+     43
+     44	0126  8A C6		     @@lp:	     mov al, dh	;cpy dh	to al
+     45	0128  C0 E8 04				     shr al, 4 ; al -> 4bit
+     46
+     47	012B  3C 09				     cmp al, 9 ;is
+     48	012D  77 0B				     ja	@@not_digit
+     49	012F  04 30				     add al, 48d ;get ascii
+     50
+     51	0131  AA		     @@write_2_buf:  stosb
+     52	0132  C1 E2 04				     shl dx, 4 ; dx <- 4bit
+     53	0135  E2 EF				     loop @@lp
+     54
+     55	0137  EB 05 90				     jmp @@exit
+     56
+     57	013A  04 37		     @@not_digit:    add al, 55d; get ascii
+Turbo Assembler	 Version 4.1	    03/02/26 20:15:45	    Page 2
+itoa.asm
+
+
+
+     58	013C  EB F3				     jmp @@write_2_buf
+     59
+     60	013E  C3		     @@exit:	     ret
+     61	013F					     endp
+     62				     ;===================================Itoa=================================
+     63				     ;Entry: es	- buf seg
+     64				     ;	     di	- write	offset
+     65				     ;	     dx	- value
+     66				     ;Exit:  es:di - buf_pos
+     67				     ;Expected:
+     68				     ;Destroyed: ax, di, cx, dx
+     69				     ;Comment: convet int to ascii and write res in buf
+     70				     ;ToDo:
+     71				     ;========================================================================
+     72
+     73				     ;====================================End=================================
+     74				     end	     Start
+Turbo Assembler	 Version 4.1	    03/02/26 20:15:45	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/02/26"
+??FILENAME			  Text	 "itoa	  "
+??TIME				  Text	 "20:15:45"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@EXIT				  Near	 DGROUP:013E
+@@LP				  Near	 DGROUP:0118
+@@LP				  Near	 DGROUP:0126
+@@NOT_DIGIT			  Near	 DGROUP:013A
+@@WRITE_2_BUF			  Near	 DGROUP:0131
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0707H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 ITOA
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+BUFF				  Byte	 DGROUP:0000
+ITOA				  Near	 DGROUP:0123
+MAIN				  Near	 DGROUP:0100
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  07D0 Word	  Public  DATA
+  _TEXT				  16  013F Word	  Public  CODE
+

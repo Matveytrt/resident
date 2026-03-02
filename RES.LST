@@ -1,0 +1,201 @@
+Turbo Assembler	 Version 4.1	    03/02/26 20:29:25	    Page 1
+res.asm
+
+
+
+      1				     ;==========================Settings======================================
+      2				     .286
+      3				     LOCALS @@
+      4	0000			     .model tiny
+      5	0000			     .code
+      6				     org 100h
+      7				     ;============================Data_Seg====================================
+      8	0100			     DATASEG
+      9	0000  0FA0*(00)		     Draw_Buf db 4000 dup (0) ;	(80d * 25) * 2 bytes
+     10				     ;========================================================================
+     11	0FA0			     CODESEG
+     12				     ;========================================================================
+     13	0100			     Start:
+     14	0100  B8 3509				     mov ax, 3509h
+     15	0103  CD 21				     int 21h
+     16	0105  89 1E 0175r			     mov Old_09_Ofs, bx
+     17	0109  8C C3				     mov bx, es
+     18	010B  89 1E 0177r			     mov Old_09_Seg, bx
+     19
+     20	010F  6A 00				     push 0
+     21	0111  07				     pop es ;int table
+     22	0112  FA				     cli
+     23	0113  BB 0024				     mov bx, 4 * 09h ;9	* 4bytes
+     24	0116  26: C7 07	012Er			     mov es:[bx], offset GetRegs
+     25	011B  8C C8				     mov ax, cs
+     26	011D  26: 89 47	02			     mov es:[bx	+ 2], ax ;swap interrupt
+     27	0121  FB				     sti
+     28
+     29	0122  B8 3100				     mov ax, 3100h
+     30	0125  BA 0198r				     mov dx, offset End_Of_Prog
+     31	0128  C1 EA 04				     shr dx, 4
+     32	012B  42				     inc dx
+     33	012C  CD 21				     int 21h
+     34				     ;==============================Get_Regs===================================
+     35	012E			     GetRegs	     proc
+     36	012E  55				     push bp
+     37	012F  9C				     pushf
+     38	0130  50 53 51 52 56 57	06+		     push ax bx	cx dx si di es ds
+     39	      1E
+     40	0138  8B EC				     mov bp, sp
+     41
+     42						     ; 'ax',
+     43						     ;stk pop -> val + buf addr	-> (val	to hex_str -> in buf) -> stosb -> reg =	    +
+     44				     "str"h -> step
+     45						     ;
+     46
+     47						     ; irp REG <ax, bx ...>
+     48						     ; macro ->	"REG = "
+     49						     ; func1 ->	"0001h"
+     50
+     51	013A  E4 60				     in	al, 60h	;get scancode
+     52	013C  3C 2D				     cmp al, 45d ;'u' scancode
+     53	013E  75 1C				     jne @@exit
+     54
+     55	0140  1E				     push ds
+     56	0141  07				     pop es ;code segment
+     57
+Turbo Assembler	 Version 4.1	    03/02/26 20:29:25	    Page 2
+res.asm
+
+
+
+     58						     ; xor si, si
+     59						     ; inc si
+     60						     ; shl si, 1 ;si = 2
+     61	0142  BF 01B8r				     lea di, [Draw_Buf + 5 * 80d + 40d];offset
+     62	0145  8B 56 12				     mov dx, [bp + 18]
+     63	0148  E8 002F				     call Itoa ;write value to buff
+     64
+     65	014B  68 B800				     push 0b800h
+     66	014E  07				     pop es
+     67	014F  BF 01B8				     mov di, 440d ;ofs vmem
+     68
+     69	0152  BE 01B8r				     lea si, [Draw_Buf + 5 * 80d + 40d]
+     70	0155  B9 0004				     mov cx, 4d	; 80x25	screen
+     71
+     72	0158  AD		     @@lp:	     lodsw
+     73	0159  AB				     stosw
+     74	015A  E2 FC				     loop @@lp
+     75						     ; mov es:[bx], ax ;stosw to vmem
+     76
+     77	015C  E4 61		     @@exit:	     in	al, 61h
+     78	015E  0C 80				     or	al, 80h
+     79	0160  E6 61				     out 61h, al
+     80	0162  24 7F				     and al, not 80h
+     81	0164  E6 61				     out 61h, al
+     82
+     83	0166  B0 20				     mov al, 20h
+     84	0168  E6 20				     out 20h, al ;send end of check to ppi ctrler
+     85
+     86	016A  1F 07 5F 5E 5A 59	5B+		     pop ds es di si dx	cx bx ax
+     87	      58
+     88	0172  9D				     popf
+     89	0173  5D				     pop bp
+     90	0174  EA				     db	0eah
+     91	0175  0000				     Old_09_Ofs	dw 0
+     92	0177  0000				     Old_09_Seg	dw 0
+     93
+     94	0179  CF				     iret
+     95	017A					     endp
+     96				     ;===================================Get_Regs=============================
+     97				     ;Entry: es	- buf seg
+     98				     ;	     di	- write	offset
+     99				     ;Exit:  -
+    100				     ;Expected:
+    101				     ;Destroyed: ax, di, cx, dx
+    102				     ;Comment:
+    103				     ;ToDo:
+    104				     ;========================================================================
+    105
+    106				     ;===================================Itoa=================================
+    107	017A			     Itoa	     proc
+    108	017A  B9 0004				     mov cx, 4d	;4-digits
+    109	017D  B4 0B				     mov ah, 0bh ;atribute
+    110
+    111	017F  8A C6		     @@lp:	     mov al, dh	;cpy dh	to al
+    112	0181  C0 E8 04				     shr al, 4 ; al -> 4bit
+    113
+    114	0184  3C 09				     cmp al, 9 ;is
+Turbo Assembler	 Version 4.1	    03/02/26 20:29:25	    Page 3
+res.asm
+
+
+
+    115	0186  77 0B				     ja	@@not_digit
+    116	0188  04 30				     add al, 48d ;get ascii
+    117
+    118	018A  AB		     @@write_2_buf:  stosw
+    119	018B  C1 E2 04				     shl dx, 4 ; dx <- 4bit
+    120	018E  E2 EF				     loop @@lp
+    121
+    122	0190  EB 05 90				     jmp @@exit
+    123
+    124	0193  04 37		     @@not_digit:    add al, 55d; get ascii
+    125	0195  EB F3				     jmp @@write_2_buf
+    126
+    127	0197  C3		     @@exit:	     ret
+    128	0198					     endp
+    129				     ;===================================Itoa=================================
+    130				     ;Entry: es	- buf seg
+    131				     ;	     di	- write	offset
+    132				     ;	     dx	- value
+    133				     ;Exit:  es:di - buf_pos
+    134				     ;Expected:
+    135				     ;Destroyed: ax, di, cx, dx
+    136				     ;Comment: convet int to ascii and write res in buf
+    137				     ;ToDo:
+    138				     ;========================================================================
+    139
+    140				     ;====================================End=================================
+    141	0198			     End_Of_Prog:
+    142				     end	     Start
+Turbo Assembler	 Version 4.1	    03/02/26 20:29:25	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/02/26"
+??FILENAME			  Text	 "res	  "
+??TIME				  Text	 "20:29:25"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@EXIT				  Near	 DGROUP:015C
+@@EXIT				  Near	 DGROUP:0197
+@@LP				  Near	 DGROUP:0158
+@@LP				  Near	 DGROUP:017F
+@@NOT_DIGIT			  Near	 DGROUP:0193
+@@WRITE_2_BUF			  Near	 DGROUP:018A
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0707H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 RES
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+DRAW_BUF			  Byte	 DGROUP:0000
+END_OF_PROG			  Near	 DGROUP:0198
+GETREGS				  Near	 DGROUP:012E
+ITOA				  Near	 DGROUP:017A
+OLD_09_OFS			  Word	 DGROUP:0175
+OLD_09_SEG			  Word	 DGROUP:0177
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0FA0 Word	  Public  DATA
+  _TEXT				  16  0198 Word	  Public  CODE
+

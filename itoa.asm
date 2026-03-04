@@ -30,7 +30,7 @@ Main            proc
 @@lp:           lodsb
                 mov ah, 4ch
                 stosw
-                loop @@lp    
+                loop @@lp 
 
                 mov ax, 4c00h
 				int 21h

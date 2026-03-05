@@ -43,9 +43,6 @@ Main            proc
 
                 call Copy_Buff ; first time copy vmem to safe
 
-                ; cld
-                ; int 09h
-
                 mov ax, 3100h ;save code in memory and end_prog
                 mov dx, offset End_Of_Prog
                 shr dx, 4
@@ -83,7 +80,7 @@ RegNames    db 'AX='
 RegOffsets  dw 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0, 24, 22
 ;              ax  bx  cx  dx  si  di  bp sp ds es ss cs  ip 13regs
 FlagMasks   dw 01h, 40h, 80h, 800h, 04h, 10h, 200h, 400h, 100h, 0, 0, 0, 0
-;              CF   ZF   SF    OF   PF   AF    IF    DF    TF 9 flags + 4 empty lines
+;              CF   ZF   SF    OF   PF   AF    IF    DF    TF   9 flags + 4 empty lines
 
 FlagNames   db 'CF='
             db 'ZF='
@@ -104,6 +101,7 @@ New_09_Int      proc
                 push bp ax ;ax - true sp
                 push ds es ss
 
+                cld
                 mov bp, sp
         
                 mov ah, 12h ;check lft ctrl press
@@ -144,7 +142,7 @@ New_09_Int      proc
                 or al, 80h
                 out 61h, al
                 and al, not 80h
-                out 61h, al
+                out 61h, al ;blinking ending bit
 
                 mov al, 20h
                 out 20h, al ;send EOI to ppi ctrler
@@ -170,23 +168,26 @@ New_09_Int      proc
 
 ;==============================New_08_Int=================================
 New_08_Int      proc
-                push sp bp
-                pushf
-                push ss cs es ds
-                push di si dx cx bx ax
+                push ax bx cx dx si di
+                mov ax, sp
+                add ax, (12d + 6d) ;6 * 2b args pushed + 3 * 2b cs, ip, flags
+                push bp ax ;ax - orig sp
+                push ds es ss
                 
+                cld
                 call Check_Buff ;rewrite draw and vmem
+
+                ; mov ax, cs
+                ; mov ds, ax ;ds = cs
+                ; mov si, offset Draw_Buf
+                ; call Write_Vmem ;rewrite draw buf
 
                 mov al, 20h
                 out 20h, al ;send EOI to int ctrler
 
-                pop ax bx cx dx si di 
-                pop ds es
-                add sp, 2
-                pop ss
-                popf
-                pop bp sp
-
+                pop ss es ds
+                pop ax bp; pop and don't destroying sp and ax
+                pop di si dx cx bx ax 
                 db 0eah
                 Old_08_Ofs dw 0
                 Old_08_Seg dw 0
@@ -321,7 +322,7 @@ Write_Draw      proc
 
 ;==============================Write_Reg=================================
 Write_Reg       proc
-                push cx
+                push dx cx
 
                 STOS_LINE 186, color_0, 1 ;1 piece
 
@@ -340,7 +341,7 @@ Write_Reg       proc
 
                 STOS_LINE 186, color_0, 1 ;1 piece
 
-                pop cx
+                pop cx dx
                 ret
                 endp
 ;==============================Write_Reg=================================
@@ -358,7 +359,7 @@ Write_Reg       proc
 Write_Flag      proc
                 push cx
 
-                mov cx, 3d ;assign str CF= 
+                mov cx, 3d ; len of assign str CF= 
                 mov si, [bx + FlagMasks]
                 test si, si ;if false -> empty str
                 jz @@fill_space ;no more flags left
@@ -371,7 +372,7 @@ Write_Flag      proc
 
 @@lp:           lodsb ;FlagData[i][k] -> al symbol
                 stosw ;ax -> draw_buf
-                loop @@lp
+                loop @@lp ;CF=
 
                 test dx, [bx + FlagMasks] ;mask with flag reg
                 jnz @@setone ; jmp when flag set on

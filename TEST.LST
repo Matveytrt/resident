@@ -1,0 +1,61 @@
+Turbo Assembler	 Version 4.1	    03/05/26 20:22:28	    Page 1
+test.asm
+
+
+
+      1				     ;==========================Settings======================================
+      2				     .286
+      3				     LOCALS @@
+      4	0000			     .model tiny
+      5	0000			     .code
+      6				     org 100h
+      7				     ;========================================================================
+      8	0100			     Start:
+      9	0100				 Inf:
+     10	0100  BB 1000					 mov bx, 1000h
+     11	0103  BE 0F60					 mov si, 0F60h
+     12	0106  BA 1212					 mov dx, 1212h
+     13	0109  FD					 std ;df =1
+     14	010A  E4 60					 in al,	60h
+     15	010C  3C 12					 cmp al, 12h
+     16	010E  74 02					 je Exit
+     17	0110  EB EE					 jmp Inf
+     18
+     19	0112				 Exit:
+     20	0112  B8 4C00					 mov ax, 4c00h
+     21	0115  CD 21					 int 21h
+     22				     end Start
+Turbo Assembler	 Version 4.1	    03/05/26 20:22:28	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/05/26"
+??FILENAME			  Text	 "test	  "
+??TIME				  Text	 "20:22:28"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0707H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 TEST
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+EXIT				  Near	 DGROUP:0112
+INF				  Near	 DGROUP:0100
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0117 Word	  Public  CODE
+

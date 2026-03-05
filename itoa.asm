@@ -32,6 +32,7 @@ Main            proc
                 stosw
                 loop @@lp 
 
+@@exit:
                 mov ax, 4c00h
 				int 21h
                 endp

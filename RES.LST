@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 1
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 1
 res.asm
 
 
@@ -21,540 +21,542 @@ res.asm
      16	0100			     Main	     proc
      17	0100  B8 3509				     mov ax, 3509h ;old	int addr table
      18	0103  CD 21				     int 21h ;return old int seg and ip
-     19	0105  89 1E 216Er			     mov Old_09_Ofs, bx
+     19	0105  89 1E 216Dr			     mov Old_09_Ofs, bx
      20	0109  8C C3				     mov bx, es
-     21	010B  89 1E 2170r			     mov Old_09_Seg, bx
+     21	010B  89 1E 216Fr			     mov Old_09_Seg, bx
      22
      23	010F  B8 3508				     mov ax, 3508h ;old	int addr table
      24	0112  CD 21				     int 21h ;return old int seg and ip
-     25	0114  89 1E 2197r			     mov Old_08_Ofs, bx
+     25	0114  89 1E 2196r			     mov Old_08_Ofs, bx
      26	0118  8C C3				     mov bx, es
-     27	011A  89 1E 2199r			     mov Old_08_Seg, bx
+     27	011A  89 1E 2198r			     mov Old_08_Seg, bx
      28
      29	011E  6A 00				     push 0
      30	0120  07				     pop es ;int table
      31
      32	0121  FA				     cli
      33	0122  BB 0024				     mov bx, 4 * 09h ;9	* 4bytes
-     34	0125  26: C7 07	2106r			     mov es:[bx], offset New_09_Int
+     34	0125  26: C7 07	2104r			     mov es:[bx], offset New_09_Int
      35	012A  8C C8				     mov ax, cs
      36	012C  26: 89 47	02			     mov es:[bx	+ 2], ax ;swap interrupt
      37
      38	0130  BB 0020				     mov bx, 4 * 08h ;8	* 4bytes
-     39	0133  26: C7 07	2173r			     mov es:[bx], offset New_08_Int
+     39	0133  26: C7 07	2172r			     mov es:[bx], offset New_08_Int
      40	0138  8C C8				     mov ax, cs
      41	013A  26: 89 47	02			     mov es:[bx	+ 2], ax ;swap interrupt
      42	013E  FB				     sti
      43
-     44	013F  E8 205A				     call Copy_Buff ; first time copy vmem to safe
+     44	013F  E8 2059				     call Copy_Buff ; first time copy vmem to safe
      45
-     46	0142  CD 09				     int 09h
-     47
-     48	0144  B8 3100				     mov ax, 3100h ;save code in memory	and end_prog
-     49	0147  BA 22F7r				     mov dx, offset End_Of_Prog
-     50	014A  C1 EA 04				     shr dx, 4
-     51	014D  42				     inc dx
-     52	014E  CD 21				     int 21h
-     53
-     54	0150					     endp
-     55				     ;=========================================================================
-     56
-     57				     ;============================Data=========================================
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 2
+     46	0142  B8 3100				     mov ax, 3100h ;save code in memory	and end_prog
+     47	0145  BA 22F8r				     mov dx, offset End_Of_Prog
+     48	0148  C1 EA 04				     shr dx, 4
+     49	014B  42				     inc dx
+     50	014C  CD 21				     int 21h
+     51
+     52	014E					     endp
+     53				     ;=========================================================================
+     54
+     55				     ;============================Data=========================================
+     56	014E  0FA0*(00)		     Draw_Buf db 4000 dup (0) ;(80d * 25) * 2 bytes
+     57	10EE  0FA0*(00)		     Safe_Buf db 4000 dup (0) ;(80d * 25) * 2 bytes
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 2
 res.asm
 
 
 
-     58	0150  0FA0*(00)		     Draw_Buf db 4000 dup (0) ;(80d * 25) * 2 bytes
-     59	10F0  0FA0*(00)		     Safe_Buf db 4000 dup (0) ;(80d * 25) * 2 bytes
-     60	      =B800		     _VmemSeg_ equ 0b800h
-     61	      =0370		     _VmemPos_ equ (5 *	80d + 40d) * 2
-     62	      =000D		     _RegStrLen_ equ 13
-     63	      =000D		     _NRegs_  equ 13
-     64	      =001A		     _FlagOfs_ equ 26
-     65	      =00E1		     _FrmSize_ = (_RegStrLen_ +	2d) * (_NRegs_ + 2d)
-     66	      =000B		     color_0 = 0bh
-     67	      =0003		     symbol_0 =	03h
-     68	2090  41 58 3D		     RegNames	 db 'AX='
-     69	2093  42 58 3D				 db 'BX='
-     70	2096  43 58 3D				 db 'CX='
-     71	2099  44 58 3D				 db 'DX='
-     72	209C  53 49 3D				 db 'SI='
-     73	209F  44 49 3D				 db 'DI='
-     74	20A2  42 50 3D				 db 'BP='
-     75	20A5  53 50 3D				 db 'SP='
-     76	20A8  44 53 3D				 db 'DS='
-     77	20AB  45 53 3D				 db 'ES='
-     78	20AE  53 53 3D				 db 'SS='
-     79	20B1  43 53 3D				 db 'CS='
-     80	20B4  49 50 3D				 db 'IP='
-     81
-     82	20B7  0014 0012	0010 000E +  RegOffsets	 dw 20,	18, 16,	14, 12,	10, 8, 6, 4, 2,	0, 24, 22
-     83	      000C 000A	0008 0006 +
-     84	      0004 0002	0000 0018 +
-     85	      0016
-     86				     ;		    ax	bx  cx	dx  si	di  bp sp ds es	ss cs  ip 13regs
-     87	20D1  0001 0040	0080 0800 +  FlagMasks	 dw 01h, 40h, 80h, 800h, 04h, 10h, 200h, 400h, 100h, 0,	0, 0, 0
-     88	      0004 0010	0200 0400 +
-     89	      0100 0000	0000 0000 +
-     90	      0000
-     91				     ;		    CF	 ZF   SF    OF	 PF   AF    IF	  DF	TF 9 flags + 4 empty lines
-     92
-     93	20EB  43 46 3D		     FlagNames	 db 'CF='
-     94	20EE  5A 46 3D				 db 'ZF='
-     95	20F1  53 46 3D				 db 'SF='
-     96	20F4  4F 46 3D				 db 'OF='
-     97	20F7  50 46 3D				 db 'PF='
-     98	20FA  41 46 3D				 db 'AF='
-     99	20FD  49 46 3D				 db 'IF='
-    100	2100  44 46 3D				 db 'DF='
-    101	2103  54 46 3D				 db 'TF='
-    102				     ;=========================================================================
-    103
-    104				     ;==============================New_09_Int=================================
-    105	2106			     New_09_Int	     proc
-    106	2106  50 53 51 52 56 57			     push ax bx	cx dx si di
-    107	210C  8B C4				     mov ax, sp
-    108	210E  05 0012				     add ax, (12d + 6d)	;6 * 2b	args pushed + 3	* 2b cs, ip, flags
-    109	2111  55 50				     push bp ax	;ax - true sp
-    110	2113  1E 06 16				     push ds es	ss
-    111
-    112	2116  8B EC				     mov bp, sp
-    113
-    114	2118  B4 12				     mov ah, 12h ;check	lft ctrl press
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 3
+     58	      =B800		     _VmemSeg_ equ 0b800h
+     59	      =0370		     _VmemPos_ equ (5 *	80d + 40d) * 2
+     60	      =000D		     _RegStrLen_ equ 13
+     61	      =000D		     _NRegs_  equ 13
+     62	      =001A		     _FlagOfs_ equ 26
+     63	      =00E1		     _FrmSize_ = (_RegStrLen_ +	2d) * (_NRegs_ + 2d)
+     64	      =000B		     color_0 = 0bh
+     65	      =0003		     symbol_0 =	03h
+     66	208E  41 58 3D		     RegNames	 db 'AX='
+     67	2091  42 58 3D				 db 'BX='
+     68	2094  43 58 3D				 db 'CX='
+     69	2097  44 58 3D				 db 'DX='
+     70	209A  53 49 3D				 db 'SI='
+     71	209D  44 49 3D				 db 'DI='
+     72	20A0  42 50 3D				 db 'BP='
+     73	20A3  53 50 3D				 db 'SP='
+     74	20A6  44 53 3D				 db 'DS='
+     75	20A9  45 53 3D				 db 'ES='
+     76	20AC  53 53 3D				 db 'SS='
+     77	20AF  43 53 3D				 db 'CS='
+     78	20B2  49 50 3D				 db 'IP='
+     79
+     80	20B5  0014 0012	0010 000E +  RegOffsets	 dw 20,	18, 16,	14, 12,	10, 8, 6, 4, 2,	0, 24, 22
+     81	      000C 000A	0008 0006 +
+     82	      0004 0002	0000 0018 +
+     83	      0016
+     84				     ;		    ax	bx  cx	dx  si	di  bp sp ds es	ss cs  ip 13regs
+     85	20CF  0001 0040	0080 0800 +  FlagMasks	 dw 01h, 40h, 80h, 800h, 04h, 10h, 200h, 400h, 100h, 0,	0, 0, 0
+     86	      0004 0010	0200 0400 +
+     87	      0100 0000	0000 0000 +
+     88	      0000
+     89				     ;		    CF	 ZF   SF    OF	 PF   AF    IF	  DF	TF   9 flags + 4 empty lines
+     90
+     91	20E9  43 46 3D		     FlagNames	 db 'CF='
+     92	20EC  5A 46 3D				 db 'ZF='
+     93	20EF  53 46 3D				 db 'SF='
+     94	20F2  4F 46 3D				 db 'OF='
+     95	20F5  50 46 3D				 db 'PF='
+     96	20F8  41 46 3D				 db 'AF='
+     97	20FB  49 46 3D				 db 'IF='
+     98	20FE  44 46 3D				 db 'DF='
+     99	2101  54 46 3D				 db 'TF='
+    100				     ;=========================================================================
+    101
+    102				     ;==============================New_09_Int=================================
+    103	2104			     New_09_Int	     proc
+    104	2104  50 53 51 52 56 57			     push ax bx	cx dx si di
+    105	210A  8B C4				     mov ax, sp
+    106	210C  05 0012				     add ax, (12d + 6d)	;6 * 2b	args pushed + 3	* 2b cs, ip, flags
+    107	210F  55 50				     push bp ax	;ax - true sp
+    108	2111  1E 06 16				     push ds es	ss
+    109
+    110	2114  FC				     cld
+    111	2115  8B EC				     mov bp, sp
+    112
+    113	2117  B4 12				     mov ah, 12h ;check	lft ctrl press
+    114	2119  CD 16				     int 16h
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 3
 res.asm
 
 
 
-    115	211A  CD 16				     int 16h
-    116	211C  A9 0100				     test ax, 0100h ;left ctrl mask
-    117	211F  74 10				     jz	@@next
-    118
-    119	2121  E4 60				     in	al, 60h	;get scancode
-    120	2123  3C 22				     cmp al, 22h ;'g' scancode
-    121	2125  75 0A				     jne @@next
-    122
-    123	2127  8C C8				     mov ax, cs
-    124	2129  8E D8				     mov ds, ax	;ds = cs
-    125	212B  BE 10F0r				     mov si, offset Safe_Buf
-    126	212E  E8 018D				     call Write_Vmem ;rewrite vmem
-    127
-    128	2131  B4 12		     @@next:	     mov ah, 12h ;check	ctrl press
-    129	2133  CD 16				     int 16h
-    130	2135  A9 0100				     test ax, 0100h ;left ctrl mask
-    131	2138  74 1A				     jz	@@exit
-    132
-    133	213A  E4 60				     in	al, 60h	;get scancode
-    134	213C  3C 21				     cmp al, 21h ;'f' scancode
-    135	213E  75 14				     jne @@exit
-    136
-    137	2140  8C C8				     mov ax, cs
-    138	2142  8E D8				     mov ds, ax	;ds = cs
-    139
-    140	2144  8E C0				     mov es, ax	;es = cs
-    141	2146  33 F6				     xor si, si
-    142	2148  BF 0150r				     mov di, offset Draw_Buf ;write ofs
-    143	214B  E8 00B5				     call Write_Draw
-    144
-    145	214E  BE 0150r				     mov si, offset Draw_Buf
-    146	2151  E8 016A				     call Write_Vmem
-    147
-    148	2154  E4 61		     @@exit:	     in	al, 61h
-    149	2156  0C 80				     or	al, 80h
-    150	2158  E6 61				     out 61h, al
-    151	215A  24 7F				     and al, not 80h
-    152	215C  E6 61				     out 61h, al
-    153
-    154	215E  B0 20				     mov al, 20h
-    155	2160  E6 20				     out 20h, al ;send EOI to ppi ctrler
-    156
-    157	2162  17 07 1F				     pop ss es ds
-    158	2165  58 5D				     pop ax bp;	pop and	don't destroying sp and	ax
-    159	2167  5F 5E 5A 59 5B 58			     pop di si dx cx bx	ax
-    160	216D  EA				     db	0eah
-    161	216E  0000				     Old_09_Ofs	dw 0
-    162	2170  0000				     Old_09_Seg	dw 0
-    163
-    164	2172  CF				     iret
-    165	2173					     endp
-    166				     ;===================================New_09_Int===========================
-    167				     ;Entry: es	- buf seg
-    168				     ;	     di	- write	offset
-    169				     ;Exit:  -
-    170				     ;Expected:
-    171				     ;Destroyed:
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 4
+    115	211B  A9 0100				     test ax, 0100h ;left ctrl mask
+    116	211E  74 10				     jz	@@next
+    117
+    118	2120  E4 60				     in	al, 60h	;get scancode
+    119	2122  3C 22				     cmp al, 22h ;'g' scancode
+    120	2124  75 0A				     jne @@next
+    121
+    122	2126  8C C8				     mov ax, cs
+    123	2128  8E D8				     mov ds, ax	;ds = cs
+    124	212A  BE 10EEr				     mov si, offset Safe_Buf
+    125	212D  E8 018F				     call Write_Vmem ;rewrite vmem
+    126
+    127	2130  B4 12		     @@next:	     mov ah, 12h ;check	ctrl press
+    128	2132  CD 16				     int 16h
+    129	2134  A9 0100				     test ax, 0100h ;left ctrl mask
+    130	2137  74 1A				     jz	@@exit
+    131
+    132	2139  E4 60				     in	al, 60h	;get scancode
+    133	213B  3C 21				     cmp al, 21h ;'f' scancode
+    134	213D  75 14				     jne @@exit
+    135
+    136	213F  8C C8				     mov ax, cs
+    137	2141  8E D8				     mov ds, ax	;ds = cs
+    138
+    139	2143  8E C0				     mov es, ax	;es = cs
+    140	2145  33 F6				     xor si, si
+    141	2147  BF 014Er				     mov di, offset Draw_Buf ;write ofs
+    142	214A  E8 00B5				     call Write_Draw
+    143
+    144	214D  BE 014Er				     mov si, offset Draw_Buf
+    145	2150  E8 016C				     call Write_Vmem
+    146
+    147	2153  E4 61		     @@exit:	     in	al, 61h
+    148	2155  0C 80				     or	al, 80h
+    149	2157  E6 61				     out 61h, al
+    150	2159  24 7F				     and al, not 80h
+    151	215B  E6 61				     out 61h, al ;blinking ending bit
+    152
+    153	215D  B0 20				     mov al, 20h
+    154	215F  E6 20				     out 20h, al ;send EOI to ppi ctrler
+    155
+    156	2161  17 07 1F				     pop ss es ds
+    157	2164  58 5D				     pop ax bp;	pop and	don't destroying sp and	ax
+    158	2166  5F 5E 5A 59 5B 58			     pop di si dx cx bx	ax
+    159	216C  EA				     db	0eah
+    160	216D  0000				     Old_09_Ofs	dw 0
+    161	216F  0000				     Old_09_Seg	dw 0
+    162
+    163	2171  CF				     iret
+    164	2172					     endp
+    165				     ;===================================New_09_Int===========================
+    166				     ;Entry: es	- buf seg
+    167				     ;	     di	- write	offset
+    168				     ;Exit:  -
+    169				     ;Expected:
+    170				     ;Destroyed:
+    171				     ;Comment:
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 4
 res.asm
 
 
 
-    172				     ;Comment:
-    173				     ;ToDo:
-    174				     ;========================================================================
-    175
-    176				     ;==============================New_08_Int=================================
-    177	2173			     New_08_Int	     proc
-    178	2173  54 55				     push sp bp
-    179	2175  9C				     pushf
-    180	2176  16 0E 06 1E			     push ss cs	es ds
-    181	217A  57 56 52 51 53 50			     push di si	dx cx bx ax
+    172				     ;ToDo:
+    173				     ;========================================================================
+    174
+    175				     ;==============================New_08_Int=================================
+    176	2172			     New_08_Int	     proc
+    177	2172  50 53 51 52 56 57			     push ax bx	cx dx si di
+    178	2178  8B C4				     mov ax, sp
+    179	217A  05 0012				     add ax, (12d + 6d)	;6 * 2b	args pushed + 3	* 2b cs, ip, flags
+    180	217D  55 50				     push bp ax	;ax - orig sp
+    181	217F  1E 06 16				     push ds es	ss
     182
-    183	2180  E8 003D				     call Check_Buff ;rewrite draw and vmem
-    184
-    185	2183  B0 20				     mov al, 20h
-    186	2185  E6 20				     out 20h, al ;send EOI to int ctrler
-    187
-    188	2187  58 5B 59 5A 5E 5F			     pop ax bx cx dx si	di
-    189	218D  1F 07				     pop ds es
-    190	218F  83 C4 02				     add sp, 2
-    191	2192  17				     pop ss
-    192	2193  9D				     popf
-    193	2194  5D 5C				     pop bp sp
-    194
-    195	2196  EA				     db	0eah
-    196	2197  0000				     Old_08_Ofs	dw 0
-    197	2199  0000				     Old_08_Seg	dw 0
-    198
-    199	219B  CF				     iret
-    200	219C					     endp
-    201				     ;===================================New_08_Int===========================
-    202				     ;Entry: es:di - buf seg
-    203				     ;Exit:  -
-    204				     ;Expected:
-    205				     ;Destroyed:
-    206				     ;Comment:
-    207				     ;ToDo:
-    208				     ;========================================================================
-    209
-    210				     ;==============================Copy_Buff=================================
-    211	219C			     Copy_Buff	     proc
-    212	219C  0E				     push cs
-    213
-    214	219D  8C C8				     mov ax, cs
-    215	219F  8E C0				     mov es, ax
-    216	21A1  BF 10F0r				     mov di, offset Safe_Buf
-    217
-    218	21A4  B8 B800				     mov ax, _VmemSeg_
-    219	21A7  8E D8				     mov ds, ax
-    220	21A9  BE 04B0				     mov si, _VmemPos_ + (160d * 2) ;pos + scroll 2 lines
-    221	21AC  B9 000F				     mov cx, (_NRegs_ +	2d)
-    222
-    223	21AF  8B D1		     @@nextline:     mov dx, cx	;save cx
-    224	21B1  B9 000F				     mov cx, (_RegStrLen_ + 2d)
-    225	21B4  F3> A5				     rep movsw ;copy line from ds:si ->	es:di
-    226	21B6  8D B4 0082			     lea si, [si + (80d	- _RegStrLen_ -	2d) * 2] ;next line
-    227	21BA  8B CA				     mov cx, dx
-    228	21BC  E2 F1				     loop @@nextline
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 5
+    183	2182  FC				     cld
+    184	2183  E8 0039				     call Check_Buff ;rewrite draw and vmem
+    185
+    186						     ; mov ax, cs
+    187						     ; mov ds, ax ;ds =	cs
+    188						     ; mov si, offset Draw_Buf
+    189						     ; call Write_Vmem ;rewrite	draw buf
+    190
+    191	2186  B0 20				     mov al, 20h
+    192	2188  E6 20				     out 20h, al ;send EOI to int ctrler
+    193
+    194	218A  17 07 1F				     pop ss es ds
+    195	218D  58 5D				     pop ax bp;	pop and	don't destroying sp and	ax
+    196	218F  5F 5E 5A 59 5B 58			     pop di si dx cx bx	ax
+    197	2195  EA				     db	0eah
+    198	2196  0000				     Old_08_Ofs	dw 0
+    199	2198  0000				     Old_08_Seg	dw 0
+    200
+    201	219A  CF				     iret
+    202	219B					     endp
+    203				     ;===================================New_08_Int===========================
+    204				     ;Entry: es:di - buf seg
+    205				     ;Exit:  -
+    206				     ;Expected:
+    207				     ;Destroyed:
+    208				     ;Comment:
+    209				     ;ToDo:
+    210				     ;========================================================================
+    211
+    212				     ;==============================Copy_Buff=================================
+    213	219B			     Copy_Buff	     proc
+    214	219B  0E				     push cs
+    215
+    216	219C  8C C8				     mov ax, cs
+    217	219E  8E C0				     mov es, ax
+    218	21A0  BF 10EEr				     mov di, offset Safe_Buf
+    219
+    220	21A3  B8 B800				     mov ax, _VmemSeg_
+    221	21A6  8E D8				     mov ds, ax
+    222	21A8  BE 04B0				     mov si, _VmemPos_ + (160d * 2) ;pos + scroll 2 lines
+    223	21AB  B9 000F				     mov cx, (_NRegs_ +	2d)
+    224
+    225	21AE  8B D1		     @@nextline:     mov dx, cx	;save cx
+    226	21B0  B9 000F				     mov cx, (_RegStrLen_ + 2d)
+    227	21B3  F3> A5				     rep movsw ;copy line from ds:si ->	es:di
+    228	21B5  8D B4 0082			     lea si, [si + (80d	- _RegStrLen_ -	2d) * 2] ;next line
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 5
 res.asm
 
 
 
-    229
-    230	21BE  1F				     pop ds
-    231	21BF  C3				     ret
-    232	21C0					     endp
-    233				     ;==============================Copy_Buff=================================
-    234				     ;Entry:
-    235				     ;Exit:
-    236				     ;Expected:
-    237				     ;Destroyed: ax, di, si, cx, dx
-    238				     ;Comment: copy vmem under frame to	buff
-    239				     ;ToDo:
-    240				     ;========================================================================
-    241
-    242				     ;==============================Check_Buff================================
-    243	21C0			     Check_Buff	     proc
-    244
-    245	21C0  8C C8				     mov ax, cs
-    246	21C2  8E D8				     mov ds, ax	;ds = cs
-    247	21C4  BE 0150r				     mov si, offset Draw_Buf
-    248	21C7  33 DB				     xor bx, bx
-    249
-    250	21C9  B8 B800				     mov ax, _VmemSeg_
-    251	21CC  8E C0				     mov es, ax
-    252	21CE  BF 0370				     mov di, _VmemPos_
-    253	21D1  B9 000F				     mov cx, (_NRegs_ +	2d)
-    254
-    255	21D4  8B D1		     @@lp:	     mov dx, cx	;save cx
-    256	21D6  B9 000F				     mov cx, (_RegStrLen_ + 2d)	;line size
-    257
-    258	21D9  85 C9		     @@checkline:    test cx, cx
-    259	21DB  74 1D				     jz	@@equal
-    260	21DD  F3> A7				     repe cmpsw	;cmps words in vmem and	draw buf
-    261	21DF  74 19				     je	@@equal
-    262	21E1  83 EF 02				     sub di, 2d	;word back
-    263	21E4  83 EE 02				     sub si, 2d
-    264
-    265	21E7  26: 8B 05				     mov ax, es:[di] ;get not_equ sym
+    229	21B9  8B CA				     mov cx, dx
+    230	21BB  E2 F1				     loop @@nextline
+    231
+    232	21BD  1F				     pop ds
+    233	21BE  C3				     ret
+    234	21BF					     endp
+    235				     ;==============================Copy_Buff=================================
+    236				     ;Entry:
+    237				     ;Exit:
+    238				     ;Expected:
+    239				     ;Destroyed: ax, di, si, cx, dx
+    240				     ;Comment: copy vmem under frame to	buff
+    241				     ;ToDo:
+    242				     ;========================================================================
+    243
+    244				     ;==============================Check_Buff================================
+    245	21BF			     Check_Buff	     proc
+    246
+    247	21BF  8C C8				     mov ax, cs
+    248	21C1  8E D8				     mov ds, ax	;ds = cs
+    249	21C3  BE 014Er				     mov si, offset Draw_Buf
+    250	21C6  33 DB				     xor bx, bx
+    251
+    252	21C8  B8 B800				     mov ax, _VmemSeg_
+    253	21CB  8E C0				     mov es, ax
+    254	21CD  BF 0370				     mov di, _VmemPos_
+    255	21D0  B9 000F				     mov cx, (_NRegs_ +	2d)
+    256
+    257	21D3  8B D1		     @@lp:	     mov dx, cx	;save cx
+    258	21D5  B9 000F				     mov cx, (_RegStrLen_ + 2d)	;line size
+    259
+    260	21D8  85 C9		     @@checkline:    test cx, cx
+    261	21DA  74 1D				     jz	@@equal
+    262	21DC  F3> A7				     repe cmpsw	;cmps words in vmem and	draw buf
+    263	21DE  74 19				     je	@@equal
+    264	21E0  83 EF 02				     sub di, 2d	;word back
+    265	21E3  83 EE 02				     sub si, 2d
     266
-    267	21EA  89 04				     mov word ptr ds:[si], ax ;fill draw buf
-    268	21EC  8D 9C 0FA0			     lea bx, [si + Safe_Buf - Draw_Buf]
-    269	21F0  89 07				     mov word ptr ds:[bx], ax ;fill save buf
-    270
-    271	21F2  83 C7 02				     add di, 2d
-    272	21F5  83 C6 02				     add si, 2d
-    273	21F8  EB DF				     jmp @@checkline
-    274	21FA  8D BD 0082	     @@equal:	     lea di, [di + (80d	- _RegStrLen_ -	2d) * 2] ;nextline
-    275	21FE  8B CA				     mov cx, dx	;get cx
-    276	2200  E2 D2				     loop @@lp
-    277
-    278	2202  C3				     ret
-    279	2203					     endp
-    280				     ;==============================Check_Buff================================
-    281				     ;Entry: -
-    282				     ;	     es:di - vmem
-    283				     ;	     ds:si - draw buf
-    284				     ;	     ds:bx - safe buf
-    285				     ;Exit:
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 6
+    267	21E6  26: 8B 05				     mov ax, es:[di] ;get not_equ sym
+    268
+    269	21E9  89 04				     mov word ptr ds:[si], ax ;fill draw buf
+    270	21EB  8D 9C 0FA0			     lea bx, [si + Safe_Buf - Draw_Buf]
+    271	21EF  89 07				     mov word ptr ds:[bx], ax ;fill save buf
+    272
+    273	21F1  83 C7 02				     add di, 2d
+    274	21F4  83 C6 02				     add si, 2d
+    275	21F7  EB DF				     jmp @@checkline
+    276	21F9  8D BD 0082	     @@equal:	     lea di, [di + (80d	- _RegStrLen_ -	2d) * 2] ;nextline
+    277	21FD  8B CA				     mov cx, dx	;get cx
+    278	21FF  E2 D2				     loop @@lp
+    279
+    280	2201  C3				     ret
+    281	2202					     endp
+    282				     ;==============================Check_Buff================================
+    283				     ;Entry: -
+    284				     ;	     es:di - vmem
+    285				     ;	     ds:si - draw buf
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 6
 res.asm
 
 
 
-    286				     ;Expected:
-    287				     ;Destroyed: ax, bx, cx, dx, es:di,	si
-    288				     ;Comment: comparing vmem under frame with draw_buff
-    289				     ;rewrite safe and draw bufs
-    290				     ;ToDo:
-    291				     ;========================================================================
-    292
-    293				     ;==============================Write_Draw================================
-    294	2203			     Write_Draw	     proc
-    295						     STOS_LINE 201, color_0, 1 ;lft corner
-1   296	2203  B0 C9				     mov al, 201
-1   297	2205  B4 0B				     mov ah, color_0
-1   298	2207  B9 0001				     mov cx, 1
-1   299	220A  F2> AB				     repne stosw ;ax ->	es:di
-    300						     STOS_LINE 205, color_0, _RegStrLen_ ;up line
-1   301	220C  B0 CD				     mov al, 205
-1   302	220E  B4 0B				     mov ah, color_0
-1   303	2210  B9 000D				     mov cx, _RegStrLen_
-1   304	2213  F2> AB				     repne stosw ;ax ->	es:di
-    305						     STOS_LINE 187, color_0, 1 ;rght corner
-1   306	2215  B0 BB				     mov al, 187
-1   307	2217  B4 0B				     mov ah, color_0
-1   308	2219  B9 0001				     mov cx, 1
-1   309	221C  F2> AB				     repne stosw ;ax ->	es:di
-    310
-    311	221E  B9 000D				     mov cx, _NRegs_
-    312	2221  33 DB				     xor bx, bx
-    313
-    314	2223  8B B7 20B7r	     @@next_reg:     mov si, [bx + RegOffsets] ;stack offset
-    315	2227  8B 12				     mov dx, [bp + si] ; dx = cur_reg
-    316	2229  E8 0027				     call Write_Reg ;write reg to buf (Reg=0000h)
-    317
-    318	222C  8B 76 1A				     mov si, [bp + _FlagOfs_]
-    319	222F  E8 004C				     call Write_Flag
-    320
-    321	2232  83 C3 02				     add bx, 2 ;next reg
-    322	2235  E2 EC				     loop @@next_reg ; 'AX=0000h'...
-    323
-    324						     STOS_LINE 200, color_0, 1 ;lft corner
-1   325	2237  B0 C8				     mov al, 200
-1   326	2239  B4 0B				     mov ah, color_0
-1   327	223B  B9 0001				     mov cx, 1
-1   328	223E  F2> AB				     repne stosw ;ax ->	es:di
-    329						     STOS_LINE 205, color_0, _RegStrLen_ ;dwn line
-1   330	2240  B0 CD				     mov al, 205
-1   331	2242  B4 0B				     mov ah, color_0
-1   332	2244  B9 000D				     mov cx, _RegStrLen_
-1   333	2247  F2> AB				     repne stosw ;ax ->	es:di
-    334						     STOS_LINE 188, color_0, 1 ;rght corner
-1   335	2249  B0 BC				     mov al, 188
-1   336	224B  B4 0B				     mov ah, color_0
-1   337	224D  B9 0001				     mov cx, 1
-1   338	2250  F2> AB				     repne stosw ;ax ->	es:di
-    339
-    340	2252  C3				     ret
-    341	2253					     endp
-    342				     ;==============================Write_Draw================================
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 7
+    286				     ;	     ds:bx - safe buf
+    287				     ;Exit:
+    288				     ;Expected:
+    289				     ;Destroyed: ax, bx, cx, dx, es:di,	si
+    290				     ;Comment: comparing vmem under frame with draw_buff
+    291				     ;rewrite safe and draw bufs
+    292				     ;ToDo:
+    293				     ;========================================================================
+    294
+    295				     ;==============================Write_Draw================================
+    296	2202			     Write_Draw	     proc
+    297						     STOS_LINE 201, color_0, 1 ;lft corner
+1   298	2202  B0 C9				     mov al, 201
+1   299	2204  B4 0B				     mov ah, color_0
+1   300	2206  B9 0001				     mov cx, 1
+1   301	2209  F2> AB				     repne stosw ;ax ->	es:di
+    302						     STOS_LINE 205, color_0, _RegStrLen_ ;up line
+1   303	220B  B0 CD				     mov al, 205
+1   304	220D  B4 0B				     mov ah, color_0
+1   305	220F  B9 000D				     mov cx, _RegStrLen_
+1   306	2212  F2> AB				     repne stosw ;ax ->	es:di
+    307						     STOS_LINE 187, color_0, 1 ;rght corner
+1   308	2214  B0 BB				     mov al, 187
+1   309	2216  B4 0B				     mov ah, color_0
+1   310	2218  B9 0001				     mov cx, 1
+1   311	221B  F2> AB				     repne stosw ;ax ->	es:di
+    312
+    313	221D  B9 000D				     mov cx, _NRegs_
+    314	2220  33 DB				     xor bx, bx
+    315
+    316	2222  8B B7 20B5r	     @@next_reg:     mov si, [bx + RegOffsets] ;stack offset
+    317	2226  8B 12				     mov dx, [bp + si] ; dx = cur_reg
+    318	2228  E8 0027				     call Write_Reg ;write reg to buf (Reg=0000h)
+    319
+    320	222B  8B 76 1A				     mov si, [bp + _FlagOfs_]
+    321	222E  E8 004E				     call Write_Flag
+    322
+    323	2231  83 C3 02				     add bx, 2 ;next reg
+    324	2234  E2 EC				     loop @@next_reg ; 'AX=0000h'...
+    325
+    326						     STOS_LINE 200, color_0, 1 ;lft corner
+1   327	2236  B0 C8				     mov al, 200
+1   328	2238  B4 0B				     mov ah, color_0
+1   329	223A  B9 0001				     mov cx, 1
+1   330	223D  F2> AB				     repne stosw ;ax ->	es:di
+    331						     STOS_LINE 205, color_0, _RegStrLen_ ;dwn line
+1   332	223F  B0 CD				     mov al, 205
+1   333	2241  B4 0B				     mov ah, color_0
+1   334	2243  B9 000D				     mov cx, _RegStrLen_
+1   335	2246  F2> AB				     repne stosw ;ax ->	es:di
+    336						     STOS_LINE 188, color_0, 1 ;rght corner
+1   337	2248  B0 BC				     mov al, 188
+1   338	224A  B4 0B				     mov ah, color_0
+1   339	224C  B9 0001				     mov cx, 1
+1   340	224F  F2> AB				     repne stosw ;ax ->	es:di
+    341
+    342	2251  C3				     ret
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 7
 res.asm
 
 
 
-    343				     ;Entry: es:di - write offset
-    344				     ;Exit:
-    345				     ;Expected:
-    346				     ;Destroyed: ax, dx, di, si, cx
-    347				     ;Comment: write frame with	reg values to draw_buf
-    348				     ;ToDo:
-    349				     ;========================================================================
-    350
-    351				     ;==============================Write_Reg=================================
-    352	2253			     Write_Reg	     proc
-    353	2253  51				     push cx
-    354
-    355						     STOS_LINE 186, color_0, 1 ;1 piece
-1   356	2254  B0 BA				     mov al, 186
-1   357	2256  B4 0B				     mov ah, color_0
-1   358	2258  B9 0001				     mov cx, 1
-1   359	225B  F2> AB				     repne stosw ;ax ->	es:di
-    360
-    361	225D  8B F3				     mov si, bx	;si = 2	* idx
-    362	225F  D1 EE				     shr si, 1 ;si = idx
-    363	2261  03 F3				     add si, bx	;3 * idx (strlen * reg_idx)
-    364	2263  8D B4 2090r			     lea si, [si + RegNames] ;reg_data + strlen	* idx
-    365
-    366	2267  B9 0003				     mov cx, 3d	;strlen("AX=")
-    367	226A  B4 0B				     mov ah, color_0 ;atribute color
-    368
-    369	226C  AC		     @@lp:	     lodsb ;RegData[i][k] -> al
-    370	226D  AB				     stosw ;ax -> draw_buf
-    371	226E  E2 FC				     loop @@lp
-    372	2270  E8 0065				     call Itoa ;dx -> draw_buf
-    373
-    374						     STOS_LINE 186, color_0, 1 ;1 piece
-1   375	2273  B0 BA				     mov al, 186
-1   376	2275  B4 0B				     mov ah, color_0
-1   377	2277  B9 0001				     mov cx, 1
-1   378	227A  F2> AB				     repne stosw ;ax ->	es:di
-    379
-    380	227C  59				     pop cx
-    381	227D  C3				     ret
-    382	227E					     endp
-    383				     ;==============================Write_Reg=================================
-    384				     ;Entry: dx	- reg_value
-    385				     ;	     si	- 2*reg_idx
-    386				     ;	     es:di - write offset
-    387				     ;Exit:  es:di - write offset
-    388				     ;Expected:	es = ds
-    389				     ;Destroyed: ax, dx, si
-    390				     ;Comment: write reg value to draw_buf
-    391				     ;ToDo:
-    392				     ;========================================================================
-    393
-    394				     ;================================Write_Flag==============================
-    395	227E			     Write_Flag	     proc
-    396	227E  51				     push cx
-    397
-    398	227F  B9 0003				     mov cx, 3d	;assign	str CF=
-    399	2282  8B B7 20D1r			     mov si, [bx + FlagMasks]
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 8
+    343	2252					     endp
+    344				     ;==============================Write_Draw================================
+    345				     ;Entry: es:di - write offset
+    346				     ;Exit:
+    347				     ;Expected:
+    348				     ;Destroyed: ax, dx, di, si, cx
+    349				     ;Comment: write frame with	reg values to draw_buf
+    350				     ;ToDo:
+    351				     ;========================================================================
+    352
+    353				     ;==============================Write_Reg=================================
+    354	2252			     Write_Reg	     proc
+    355	2252  52 51				     push dx cx
+    356
+    357						     STOS_LINE 186, color_0, 1 ;1 piece
+1   358	2254  B0 BA				     mov al, 186
+1   359	2256  B4 0B				     mov ah, color_0
+1   360	2258  B9 0001				     mov cx, 1
+1   361	225B  F2> AB				     repne stosw ;ax ->	es:di
+    362
+    363	225D  8B F3				     mov si, bx	;si = 2	* idx
+    364	225F  D1 EE				     shr si, 1 ;si = idx
+    365	2261  03 F3				     add si, bx	;3 * idx (strlen * reg_idx)
+    366	2263  8D B4 208Er			     lea si, [si + RegNames] ;reg_data + strlen	* idx
+    367
+    368	2267  B9 0003				     mov cx, 3d	;strlen("AX=")
+    369	226A  B4 0B				     mov ah, color_0 ;atribute color
+    370
+    371	226C  AC		     @@lp:	     lodsb ;RegData[i][k] -> al
+    372	226D  AB				     stosw ;ax -> draw_buf
+    373	226E  E2 FC				     loop @@lp
+    374	2270  E8 0066				     call Itoa ;dx -> draw_buf
+    375
+    376						     STOS_LINE 186, color_0, 1 ;1 piece
+1   377	2273  B0 BA				     mov al, 186
+1   378	2275  B4 0B				     mov ah, color_0
+1   379	2277  B9 0001				     mov cx, 1
+1   380	227A  F2> AB				     repne stosw ;ax ->	es:di
+    381
+    382	227C  59 5A				     pop cx dx
+    383	227E  C3				     ret
+    384	227F					     endp
+    385				     ;==============================Write_Reg=================================
+    386				     ;Entry: dx	- reg_value
+    387				     ;	     si	- 2*reg_idx
+    388				     ;	     es:di - write offset
+    389				     ;Exit:  es:di - write offset
+    390				     ;Expected:	es = ds
+    391				     ;Destroyed: ax, dx, si
+    392				     ;Comment: write reg value to draw_buf
+    393				     ;ToDo:
+    394				     ;========================================================================
+    395
+    396				     ;================================Write_Flag==============================
+    397	227F			     Write_Flag	     proc
+    398	227F  51				     push cx
+    399
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 8
 res.asm
 
 
 
-    400	2286  85 F6				     test si, si ;if false -> empty str
-    401	2288  74 22				     jz	@@fill_space ;no more flags left
-    402
-    403	228A  8B F3				     mov si, bx	;si = 2	* idx
-    404	228C  D1 EE				     shr si, 1 ;si = idx
-    405	228E  03 F3				     add si, bx	;3 * idx (strlen * flag_idx)
-    406	2290  8D B4 20EBr			     lea si, [si + FlagNames] ;flag_data + strlen * idx
-    407	2294  B4 0B				     mov ah, color_0
-    408
-    409	2296  AC		     @@lp:	     lodsb ;FlagData[i][k] -> al symbol
-    410	2297  AB				     stosw ;ax -> draw_buf
-    411	2298  E2 FC				     loop @@lp
-    412
-    413	229A  85 97 20D1r			     test dx, [bx + FlagMasks] ;mask with flag reg
-    414	229E  75 06				     jnz @@setone ; jmp	when flag set on
-    415
-    416	22A0  B0 30				     mov al, '0' ;flag val = 0
-    417	22A2  AB				     stosw
-    418	22A3  EB 0E 90				     jmp @@exit
-    419
-    420	22A6  B0 31		     @@setone:	     mov al, '1' ; flag_val = 1
-    421	22A8  AB				     stosw
-    422	22A9  EB 08 90				     jmp @@exit
-    423
-    424	22AC  32 C0		     @@fill_space:   xor al, al	;black on black
-    425	22AE  B4 0B				     mov ah, color_0
-    426	22B0  41				     inc cx ;4 spaces
-    427	22B1  F2> AB				     repne stosw ;fill str
-    428
-    429	22B3			     @@exit:	     STOS_LINE 186, color_0, 1 ;1 piece
-1   430	22B3  B0 BA				     mov al, 186
-1   431	22B5  B4 0B				     mov ah, color_0
-1   432	22B7  B9 0001				     mov cx, 1
-1   433	22BA  F2> AB				     repne stosw ;ax ->	es:di
-    434	22BC  59				     pop cx
-    435	22BD  C3				     ret
-    436	22BE					     endp
-    437				     ;================================Write_Flag==============================
-    438				     ;Entry: dx	- flag registr
-    439				     ;Exit: es:di
-    440				     ;Expected:	es = ds
-    441				     ;Destroyed: ax, si
-    442				     ;Comment:	write flag value to draw buf
-    443				     ;ToDo:
-    444				     ;========================================================================
-    445
-    446				     ;==============================Write_Vmem================================
-    447	22BE			     Write_Vmem	     proc
-    448	22BE  68 B800				     push _VmemSeg_
-    449	22C1  07				     pop es ;vmem seg
-    450
-    451	22C2  BF 0370				     mov di, _VmemPos_ ; vmem pos
-    452	22C5  B9 000F				     mov cx, (_NRegs_ +	2d); size = regstrlen *
-    453
-    454	22C8  8B D1		     @@vmem:	     mov dx, cx	;save cx
-    455	22CA  B9 000F				     mov cx, (_RegStrLen_  + 2d)
-    456	22CD  F3> A5				     rep movsw
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 9
+    400	2280  B9 0003				     mov cx, 3d	; len of assign	str CF=
+    401	2283  8B B7 20CFr			     mov si, [bx + FlagMasks]
+    402	2287  85 F6				     test si, si ;if false -> empty str
+    403	2289  74 22				     jz	@@fill_space ;no more flags left
+    404
+    405	228B  8B F3				     mov si, bx	;si = 2	* idx
+    406	228D  D1 EE				     shr si, 1 ;si = idx
+    407	228F  03 F3				     add si, bx	;3 * idx (strlen * flag_idx)
+    408	2291  8D B4 20E9r			     lea si, [si + FlagNames] ;flag_data + strlen * idx
+    409	2295  B4 0B				     mov ah, color_0
+    410
+    411	2297  AC		     @@lp:	     lodsb ;FlagData[i][k] -> al symbol
+    412	2298  AB				     stosw ;ax -> draw_buf
+    413	2299  E2 FC				     loop @@lp ;CF=
+    414
+    415	229B  85 97 20CFr			     test dx, [bx + FlagMasks] ;mask with flag reg
+    416	229F  75 06				     jnz @@setone ; jmp	when flag set on
+    417
+    418	22A1  B0 30				     mov al, '0' ;flag val = 0
+    419	22A3  AB				     stosw
+    420	22A4  EB 0E 90				     jmp @@exit
+    421
+    422	22A7  B0 31		     @@setone:	     mov al, '1' ; flag_val = 1
+    423	22A9  AB				     stosw
+    424	22AA  EB 08 90				     jmp @@exit
+    425
+    426	22AD  32 C0		     @@fill_space:   xor al, al	;black on black
+    427	22AF  B4 0B				     mov ah, color_0
+    428	22B1  41				     inc cx ;4 spaces
+    429	22B2  F2> AB				     repne stosw ;fill str
+    430
+    431	22B4			     @@exit:	     STOS_LINE 186, color_0, 1 ;1 piece
+1   432	22B4  B0 BA				     mov al, 186
+1   433	22B6  B4 0B				     mov ah, color_0
+1   434	22B8  B9 0001				     mov cx, 1
+1   435	22BB  F2> AB				     repne stosw ;ax ->	es:di
+    436	22BD  59				     pop cx
+    437	22BE  C3				     ret
+    438	22BF					     endp
+    439				     ;================================Write_Flag==============================
+    440				     ;Entry: dx	- flag registr
+    441				     ;Exit: es:di
+    442				     ;Expected:	es = ds
+    443				     ;Destroyed: ax, si
+    444				     ;Comment:	write flag value to draw buf
+    445				     ;ToDo:
+    446				     ;========================================================================
+    447
+    448				     ;==============================Write_Vmem================================
+    449	22BF			     Write_Vmem	     proc
+    450	22BF  68 B800				     push _VmemSeg_
+    451	22C2  07				     pop es ;vmem seg
+    452
+    453	22C3  BF 0370				     mov di, _VmemPos_ ; vmem pos
+    454	22C6  B9 000F				     mov cx, (_NRegs_ +	2d); size = regstrlen *
+    455
+    456	22C9  8B D1		     @@vmem:	     mov dx, cx	;save cx
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 9
 res.asm
 
 
 
-    457	22CF  8D BD 0082			     lea di, [di + (80d	- _RegStrLen_ -	2d) * 2] ;next line
-    458	22D3  8B CA				     mov cx, dx
-    459	22D5  E2 F1				     loop @@vmem
-    460
-    461	22D7  C3		     @@exit:	     ret
-    462	22D8					     endp
-    463				     ;==============================Write_Vmem================================
-    464				     ;Entry: si	- buf ofs
-    465				     ;Exit:
-    466				     ;Expected:
-    467				     ;Destroyed: ax, bx, es:di
-    468				     ;Comment: write draw_buf to vmem
-    469				     ;ToDo:
-    470				     ;========================================================================
-    471
-    472				     ;===================================Itoa=================================
-    473	22D8			     Itoa	     proc
-    474
-    475	22D8  B9 0004				     mov cx, 4d	;4-digits
+    457	22CB  B9 000F				     mov cx, (_RegStrLen_  + 2d)
+    458	22CE  F3> A5				     rep movsw
+    459	22D0  8D BD 0082			     lea di, [di + (80d	- _RegStrLen_ -	2d) * 2] ;next line
+    460	22D4  8B CA				     mov cx, dx
+    461	22D6  E2 F1				     loop @@vmem
+    462
+    463	22D8  C3		     @@exit:	     ret
+    464	22D9					     endp
+    465				     ;==============================Write_Vmem================================
+    466				     ;Entry: si	- buf ofs
+    467				     ;Exit:
+    468				     ;Expected:
+    469				     ;Destroyed: ax, bx, es:di
+    470				     ;Comment: write draw_buf to vmem
+    471				     ;ToDo:
+    472				     ;========================================================================
+    473
+    474				     ;===================================Itoa=================================
+    475	22D9			     Itoa	     proc
     476
-    477	22DB  8A C6		     @@lp:	     mov al, dh	;cpy dh	to al
-    478	22DD  C0 E8 04				     shr al, 4 ; al -> 4bit
-    479
-    480	22E0  3C 09				     cmp al, 9 ;is
-    481	22E2  77 0E				     ja	@@not_digit
-    482	22E4  04 30				     add al, 48d ;'0'+ num = ascii
-    483
-    484	22E6  AB		     @@write_2_buf:  stosw ;
-    485	22E7  C1 E2 04				     shl dx, 4 ; dx <- 4bit
-    486	22EA  E2 EF				     loop @@lp
-    487
-    488	22EC  B0 68				     mov al, 'h' ; 0000h
-    489	22EE  AB				     stosw
-    490	22EF  EB 05 90				     jmp @@exit
-    491
-    492	22F2  04 37		     @@not_digit:    add al, 55d; num +	('A' - 10) = ascii
-    493	22F4  EB F0				     jmp @@write_2_buf
-    494
-    495	22F6  C3		     @@exit:	     ret
-    496	22F7					     endp
-    497				     ;===================================Itoa=================================
-    498				     ;Entry: es	- buf seg
-    499				     ;	     di	- write	offset
-    500				     ;	     dx	- value
-    501				     ;	     ah	- color	atr
-    502				     ;Exit:  es:di - buf_pos
-    503				     ;Expected:
-    504				     ;Destroyed: al, cx, dx
-    505				     ;Comment: convet int to ascii and write res in buf
-    506				     ;ToDo:
-    507				     ;========================================================================
-    508
-    509				     ;====================================End=================================
-    510	22F7			     End_Of_Prog:
-    511				     end	     Start
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 10
+    477	22D9  B9 0004				     mov cx, 4d	;4-digits
+    478
+    479	22DC  8A C6		     @@lp:	     mov al, dh	;cpy dh	to al
+    480	22DE  C0 E8 04				     shr al, 4 ; al -> 4bit
+    481
+    482	22E1  3C 09				     cmp al, 9 ;is
+    483	22E3  77 0E				     ja	@@not_digit
+    484	22E5  04 30				     add al, 48d ;'0'+ num = ascii
+    485
+    486	22E7  AB		     @@write_2_buf:  stosw ;
+    487	22E8  C1 E2 04				     shl dx, 4 ; dx <- 4bit
+    488	22EB  E2 EF				     loop @@lp
+    489
+    490	22ED  B0 68				     mov al, 'h' ; 0000h
+    491	22EF  AB				     stosw
+    492	22F0  EB 05 90				     jmp @@exit
+    493
+    494	22F3  04 37		     @@not_digit:    add al, 55d; num +	('A' - 10) = ascii
+    495	22F5  EB F0				     jmp @@write_2_buf
+    496
+    497	22F7  C3		     @@exit:	     ret
+    498	22F8					     endp
+    499				     ;===================================Itoa=================================
+    500				     ;Entry: es	- buf seg
+    501				     ;	     di	- write	offset
+    502				     ;	     dx	- value
+    503				     ;	     ah	- color	atr
+    504				     ;Exit:  es:di - buf_pos
+    505				     ;Expected:
+    506				     ;Destroyed: al, cx, dx
+    507				     ;Comment: convet int to ascii and write res in buf
+    508				     ;ToDo:
+    509				     ;========================================================================
+    510
+    511				     ;====================================End=================================
+    512	22F8			     End_Of_Prog:
+    513				     end	     Start
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 10
 Symbol Table
 
 
@@ -564,27 +566,27 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "03/05/26"
 ??FILENAME			  Text	 "res	  "
-??TIME				  Text	 "18:47:52"
+??TIME				  Text	 "21:39:32"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
-@@CHECKLINE			  Near	 DGROUP:21D9
-@@EQUAL				  Near	 DGROUP:21FA
-@@EXIT				  Near	 DGROUP:2154
-@@EXIT				  Near	 DGROUP:22B3
-@@EXIT				  Near	 DGROUP:22D7
-@@EXIT				  Near	 DGROUP:22F6
-@@FILL_SPACE			  Near	 DGROUP:22AC
-@@LP				  Near	 DGROUP:21D4
+@@CHECKLINE			  Near	 DGROUP:21D8
+@@EQUAL				  Near	 DGROUP:21F9
+@@EXIT				  Near	 DGROUP:2153
+@@EXIT				  Near	 DGROUP:22B4
+@@EXIT				  Near	 DGROUP:22D8
+@@EXIT				  Near	 DGROUP:22F7
+@@FILL_SPACE			  Near	 DGROUP:22AD
+@@LP				  Near	 DGROUP:21D3
 @@LP				  Near	 DGROUP:226C
-@@LP				  Near	 DGROUP:2296
-@@LP				  Near	 DGROUP:22DB
-@@NEXT				  Near	 DGROUP:2131
-@@NEXTLINE			  Near	 DGROUP:21AF
-@@NEXT_REG			  Near	 DGROUP:2223
-@@NOT_DIGIT			  Near	 DGROUP:22F2
-@@SETONE			  Near	 DGROUP:22A6
-@@VMEM				  Near	 DGROUP:22C8
-@@WRITE_2_BUF			  Near	 DGROUP:22E6
+@@LP				  Near	 DGROUP:2297
+@@LP				  Near	 DGROUP:22DC
+@@NEXT				  Near	 DGROUP:2130
+@@NEXTLINE			  Near	 DGROUP:21AE
+@@NEXT_REG			  Near	 DGROUP:2222
+@@NOT_DIGIT			  Near	 DGROUP:22F3
+@@SETONE			  Near	 DGROUP:22A7
+@@VMEM				  Near	 DGROUP:22C9
+@@WRITE_2_BUF			  Near	 DGROUP:22E7
 @CODE				  Text	 DGROUP
 @CODESIZE			  Text	 0
 @CPU				  Text	 0707H
@@ -596,35 +598,35 @@ Symbol Name			  Type	 Value
 @MODEL				  Text	 1
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
-CHECK_BUFF			  Near	 DGROUP:21C0
+CHECK_BUFF			  Near	 DGROUP:21BF
 COLOR_0				  Number 000B
-COPY_BUFF			  Near	 DGROUP:219C
-DRAW_BUF			  Byte	 DGROUP:0150
-END_OF_PROG			  Near	 DGROUP:22F7
-FLAGMASKS			  Word	 DGROUP:20D1
-FLAGNAMES			  Byte	 DGROUP:20EB
-ITOA				  Near	 DGROUP:22D8
+COPY_BUFF			  Near	 DGROUP:219B
+DRAW_BUF			  Byte	 DGROUP:014E
+END_OF_PROG			  Near	 DGROUP:22F8
+FLAGMASKS			  Word	 DGROUP:20CF
+FLAGNAMES			  Byte	 DGROUP:20E9
+ITOA				  Near	 DGROUP:22D9
 MAIN				  Near	 DGROUP:0100
-NEW_08_INT			  Near	 DGROUP:2173
-NEW_09_INT			  Near	 DGROUP:2106
-OLD_08_OFS			  Word	 DGROUP:2197
-OLD_08_SEG			  Word	 DGROUP:2199
-OLD_09_OFS			  Word	 DGROUP:216E
-OLD_09_SEG			  Word	 DGROUP:2170
-REGNAMES			  Byte	 DGROUP:2090
-REGOFFSETS			  Word	 DGROUP:20B7
-SAFE_BUF			  Byte	 DGROUP:10F0
+NEW_08_INT			  Near	 DGROUP:2172
+NEW_09_INT			  Near	 DGROUP:2104
+OLD_08_OFS			  Word	 DGROUP:2196
+OLD_08_SEG			  Word	 DGROUP:2198
+OLD_09_OFS			  Word	 DGROUP:216D
+OLD_09_SEG			  Word	 DGROUP:216F
+REGNAMES			  Byte	 DGROUP:208E
+REGOFFSETS			  Word	 DGROUP:20B5
+SAFE_BUF			  Byte	 DGROUP:10EE
 START				  Near	 DGROUP:0100
 SYMBOL_0			  Number 0003
-Turbo Assembler	 Version 4.1	    03/05/26 18:47:52	    Page 11
+Turbo Assembler	 Version 4.1	    03/05/26 21:39:32	    Page 11
 Symbol Table
 
 
 
-WRITE_DRAW			  Near	 DGROUP:2203
-WRITE_FLAG			  Near	 DGROUP:227E
-WRITE_REG			  Near	 DGROUP:2253
-WRITE_VMEM			  Near	 DGROUP:22BE
+WRITE_DRAW			  Near	 DGROUP:2202
+WRITE_FLAG			  Near	 DGROUP:227F
+WRITE_REG			  Near	 DGROUP:2252
+WRITE_VMEM			  Near	 DGROUP:22BF
 _FLAGOFS_			  Number 001A
 _FRMSIZE_			  Number 00E1
 _NREGS_				  Number 000D
@@ -640,5 +642,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  22F7 Word	  Public  CODE
+  _TEXT				  16  22F8 Word	  Public  CODE
 
